@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import hljs from 'highlight.js'
 import { marked } from 'marked'
 import 'highlight.js/styles/atom-one-dark.css'
@@ -35,6 +35,21 @@ const messages = ref<Message[]>([])
 const newMessage = ref('')
 const loading = ref(false)
 const currentResponse = ref('')
+
+// 添加深色模式状态
+const isDarkMode = ref(false)
+
+// 切换深色模式
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  localStorage.setItem('darkMode', isDarkMode.value.toString())
+}
+
+// 初始化深色模式
+onMounted(() => {
+  const savedMode = localStorage.getItem('darkMode')
+  isDarkMode.value = savedMode === 'true'
+})
 
 const sendMessage = async () => {
   if (!newMessage.value.trim() || loading.value) return
@@ -137,7 +152,11 @@ window.copyCode = copyCode
 </script>
 
 <template>
-  <div class="container">
+  <div class="container" :class="{ 'dark-mode': isDarkMode }">
+    <button class="theme-toggle" @click="toggleDarkMode">
+      {{ isDarkMode ? '🌙' : '☀️' }}
+    </button>
+    
     <h1>AI 智能助手</h1>
     
     <div class="chat-container">
@@ -171,120 +190,132 @@ window.copyCode = copyCode
 <style scoped>
 /* 基础布局样式 */
 .container {
-  max-width: 800px;          /* 限制容器最大宽度 */
-  margin: 0 auto;            /* 水平居中 */
-  padding: 20px;             /* 容器内边距 */
-}
-
-/* 聊天窗口容器 */
-.chat-container {
+  max-width: 1400px;         /* 增加最大宽度到1400px */
+  min-width: 1000px;         /* 增加最小宽度到1000px */
+  margin: 0 auto;
+  padding: 30px 40px;        /* 增加水平内边距 */
+  height: 100vh;
+  box-sizing: border-box;
   display: flex;
-  flex-direction: column;    /* 纵向排列 */
-  height: 80vh;              /* 视窗高度的80% */
-  border: 1px solid #eee;    /* 边框 */
-  border-radius: 8px;        /* 圆角 */
-  background: #fff;          /* 背景色 */
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);  /* 阴影效果 */
-}
-
-/* 消息列表区域 */
-.messages {
-  flex: 1;                   /* 占用剩余空间 */
-  overflow-y: auto;          /* 垂直滚动 */
-  padding: 20px;             /* 内边距 */
-}
-
-/* 单条消息样式 */
-.message {
-  display: flex;
-  margin-bottom: 20px;       /* 消息间距 */
-  align-items: flex-start;   /* 顶部对齐 */
-  flex-direction: row;       /* 水平排列 */
-}
-
-/* 用户消息样式 */
-.message.user {
-  justify-content: flex-start;  /* 左对齐 */
-}
-
-/* 头像样式 */
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;        /* 圆形头像 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  margin: 0 10px;
-  order: 1;                  /* 排序位置 */
-}
-
-/* 消息内容基础样式 */
-.content {
-  width: 100%;
-  max-width: 100%;
-  padding: 20px 25px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  color: #2c3e50;
-  text-align: left;
-}
-
-/* 用户消息内容样式 */
-.user .content {
-  background: #007AFF;       /* 蓝色背景 */
-  color: white;              /* 白色文字 */
-}
-
-/* 输入区域样式 */
-.input-area {
-  padding: 20px;
-  border-top: 1px solid #eee;
-  display: flex;
-  gap: 10px;                 /* 元素间距 */
-}
-
-/* 文本输入框样式 */
-textarea {
-  flex: 1;                   /* 占用剩余空间 */
-  height: 60px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  resize: none;              /* 禁止调整大小 */
-  font-size: 14px;
-}
-
-/* 按钮基础样式 */
-button {
-  padding: 0 20px;
-  background-color: #007AFF;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;  /* 颜色过渡动画 */
-}
-
-/* 按钮悬停效果 */
-button:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-/* 禁用按钮样式 */
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+  flex-direction: column;
 }
 
 /* 标题样式 */
 h1 {
   text-align: center;
   color: #333;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  font-size: 2em;            /* 增大标题字号 */
+}
+
+/* 聊天窗口容器 */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+  border: 1px solid #eee;
+  border-radius: 16px;       /* 增大圆角 */
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* 消息列表区域 */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;             /* 增大内边距 */
+  margin-bottom: 0;
+}
+
+/* 单条消息样式 */
+.message {
+  display: flex;
+  margin-bottom: 25px;       /* 增加消息间距 */
+  align-items: flex-start;
+}
+
+/* 头像样式 */
+.avatar {
+  width: 45px;               /* 增大头像 */
+  height: 45px;
+  border-radius: 50%;
+  margin: 0 15px;            /* 增加边距 */
+  font-size: 22px;           /* 增大表情符号 */
+}
+
+/* 消息内容基础样式 */
+.content {
+  max-width: 90%;           /* 增加消息最大宽度 */
+  padding: 20px 30px;       /* 增加水平内边距 */
+  font-size: 16px;
+  line-height: 1.6;
+  border-radius: 12px;
+}
+
+/* 用户消息内容样式 */
+.user .content {
+  background: #007AFF;
+  color: white;
+}
+
+/* 助手消息样式 */
+.assistant .content {
+  background: #f8f9fa;
+  padding: 25px 35px;
+  line-height: 1.7;
+}
+
+/* 输入区域样式 */
+.input-area {
+  padding: 25px 30px;        /* 增大内边距 */
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 15px;                 /* 增加间距 */
+}
+
+/* 文本输入框样式 */
+textarea {
+  flex: 1;
+  height: 65px;              /* 增大高度 */
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;           /* 增大字体 */
+  resize: none;
+}
+
+/* 发送按钮样式 */
+button {
+  padding: 0 30px;           /* 增大内边距 */
+  font-size: 16px;
+  border-radius: 10px;
+  background-color: #007AFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 1400px) {
+  .container {
+    max-width: 95vw;
+    min-width: 800px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    min-width: unset;
+    width: 100%;
+    padding: 15px;
+  }
+  
+  .content {
+    max-width: 90%;
+  }
 }
 
 /* 代码块容器样式 */
@@ -292,17 +323,18 @@ h1 {
   margin: 1em 0;
   padding: 0;
   border-radius: 8px;
-  background: #1e1e1e !important;  /* 深色背景 */
+  background: #1e1e1e !important;
   overflow: hidden;
   position: relative;
   width: 100%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-align: left;
 }
 
 /* 代码块顶部栏 */
 .content :deep(pre)::before {
-  content: attr(data-language);  /* 使用动态语言属性 */
-  text-transform: capitalize;    /* 首字母大写 */
+  content: attr(data-language);
+  text-transform: capitalize;
   position: absolute;
   top: 0;
   left: 0;
@@ -316,23 +348,35 @@ h1 {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   border-bottom: 1px solid #3d3d3d;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding-right: 70px;  /* 为复制按钮留出空间 */
+  padding-right: 70px;
 }
 
 /* 代码内容样式 */
 .content :deep(pre) code {
   display: block;
-  padding: 15px;
-  padding-top: 45px;        /* 为顶部栏留出空间 */
-  font-family: 'JetBrains Mono', Consolas, monospace;  /* 等宽字体 */
+  padding: 15px 20px;
+  padding-top: 45px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
   font-size: 14px;
   line-height: 1.6;
   tab-size: 4;
   color: #d4d4d4;
   background: transparent !important;
-  overflow-x: auto;         /* 横向滚动 */
+  overflow-x: auto;
+  text-align: left;
+}
+
+/* 内联代码样式 */
+.content :deep(:not(pre) > code) {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(27,31,35,0.05);
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  text-align: left;
 }
 
 /* 代码高亮颜色配置 */
@@ -348,37 +392,103 @@ h1 {
 
 /* Markdown 文本样式 */
 .content :deep(h1) { 
-  font-size: 1.6em; 
-  margin: 0.3em 0 0.1em;     /* 一级标题上下间距 */
+  font-size: 1.8em; 
+  margin: 1.2em 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid #eaecef;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: left;
 }
 
 .content :deep(h2) { 
-  font-size: 1.4em; 
-  margin: 0.2em 0 0.1em;     /* 二级标题上下间距 */
+  font-size: 1.5em; 
+  margin: 1em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eaecef;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: left;
 }
 
 .content :deep(h3) { 
+  font-size: 1.3em; 
+  margin: 0.8em 0 0.4em;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: left;
+}
+
+.content :deep(h4) { 
   font-size: 1.2em; 
-  margin: 0.1em 0 0.1em;     /* 三级标题上下间距 */
+  margin: 0.6em 0 0.3em;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: left;
 }
 
 .content :deep(p) { 
-  margin: 0.1em 0;           /* 段落上下间距 */
-  line-height: 1.4;          /* 段落行高 */
+  margin: 0.8em 0;
+  line-height: 1.7;
+  color: #24292e;
+  text-align: left;
 }
 
 .content :deep(ul), .content :deep(ol) { 
-  margin: 0.1em 0;           /* 列表上下间距 */
-  padding-left: 1.0em;       /* 列表缩进 */
+  margin: 0.8em 0;
+  padding-left: 2em;
+  color: #24292e;
+  text-align: left;
 }
 
 .content :deep(li) { 
-  margin: 0.08em 0;          /* 列表项间距 */
+  margin: 0.4em 0;
+  line-height: 1.7;
 }
 
 .content :deep(blockquote) { 
-  margin: 0.1em 0;           /* 引用块上下间距 */
-  padding: 0.1em 0.6em;      /* 引用块内边距 */
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  color: #6a737d;
+  background: #f6f8fa;
+  border-left: 4px solid #dfe2e5;
+  text-align: left;
+}
+
+.content :deep(a) {
+  color: #0366d6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.content :deep(a:hover) {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+.content :deep(strong) {
+  font-weight: 600;
+  color: #24292e;
+}
+
+.content :deep(em) {
+  font-style: italic;
+}
+
+.content :deep(code) {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(27,31,35,0.05);
+  border-radius: 3px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.content :deep(img) {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  border-radius: 4px;
 }
 
 /* 滚动条样式 */
@@ -412,6 +522,120 @@ h1 {
 
 .content :deep(.copy-btn:hover) {
   background: #666;
+  color: #fff;
+}
+
+/* 深色模式切换按钮 */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* 深色模式样式 */
+.dark-mode {
+  background-color: #1a1a1a;
+}
+
+.dark-mode h1 {
+  color: #fff;
+}
+
+.dark-mode .chat-container {
+  background: #2d2d2d;
+  border-color: #3d3d3d;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .message .content {
+  color: #e0e0e0;
+}
+
+.dark-mode .assistant .content {
+  background: #3d3d3d;
+  color: #e0e0e0;
+}
+
+.dark-mode .user .content {
+  background: #0056b3;
+  color: #fff;
+}
+
+.dark-mode textarea {
+  background: #3d3d3d;
+  border-color: #4d4d4d;
+  color: #fff;
+}
+
+.dark-mode .input-area {
+  border-top-color: #3d3d3d;
+  background: #2d2d2d;
+}
+
+.dark-mode button:not(.theme-toggle) {
+  background-color: #0056b3;
+}
+
+/* 深色模式下的 Markdown 样式 */
+.dark-mode .content :deep(h1),
+.dark-mode .content :deep(h2),
+.dark-mode .content :deep(h3),
+.dark-mode .content :deep(h4) {
+  color: #e0e0e0;
+  border-bottom-color: #3d3d3d;
+}
+
+.dark-mode .content :deep(p),
+.dark-mode .content :deep(ul),
+.dark-mode .content :deep(ol),
+.dark-mode .content :deep(li) {
+  color: #d4d4d4;
+}
+
+.dark-mode .content :deep(blockquote) {
+  background: #2d2d2d;
+  border-left-color: #4d4d4d;
+  color: #b0b0b0;
+}
+
+.dark-mode .content :deep(a) {
+  color: #58a6ff;
+}
+
+.dark-mode .content :deep(code) {
+  background-color: rgba(240, 240, 240, 0.1);
+  color: #e0e0e0;
+}
+
+/* 深色模式下的滚动条 */
+.dark-mode .messages::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 深色模式下的复制按钮 */
+.dark-mode .content :deep(.copy-btn) {
+  border-color: #4d4d4d;
+  color: #b0b0b0;
+}
+
+.dark-mode .content :deep(.copy-btn:hover) {
+  background: #4d4d4d;
   color: #fff;
 }
 </style>
